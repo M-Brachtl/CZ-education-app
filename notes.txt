@@ -1,0 +1,2 @@
+Zájmena mohou být označena jako determinátory
+Řadové číslovky jsou pro UPOS přídavnými jmény

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing</title>
+</head>
+<body>
+    <h1>This HTML is for testing the api.</h1>
+    <h2>Sentence POS</h2>
+    <label for="sentence">Enter a sentence:</label><br>
+    <input type="text" id="sentence"><br>
+    <button onclick="
+        const sentence = document.getElementById('sentence').value;
+        fetch(`http://localhost:5000/pos/{sentence}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({sentence: sentence}),
+        }).then(response => response.json())
+        .then(data => {
+            console.log(data);
+            document.getElementById('response').innerText = JSON.stringify(data);
+        });
+    ">Send</button>
+    <!-- response -->
+    <p>Response:</p>
+    <p id="response"></p>
+</body>
+</html>
