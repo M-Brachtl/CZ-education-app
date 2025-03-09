@@ -20,13 +20,11 @@ upos_convertion = {
     "AUX": "Pomocné sloveso",
     "SYM": "Symbol",
     "X": "Neznámé",
-    # "PUNCT": "Interpunkce",
-    # "SPACE": "Mezera",
     "PROPN": "Vlastní jméno",
     "CCONJ": "Souřadící spojka"     
 }
 
-xpos_conversion = { # hypotéza
+xpos_conversion = {
     "N": "Podstatné jméno",
     "A": "Přídavné jméno",
     "V": "Sloveso",
@@ -54,8 +52,7 @@ def get_upos_sentence(input_text):
     
 def get_xpos_sentence(input_text):
     doc = nlp(input_text)
-    print(doc.sentences)
-# Udělal to moc rychle, a proto jej nevzali na naši školu.
+    print(doc.sentences,file=open("nlp_log.txt", "w"))
     for sentence in doc.sentences:
         result = {}
         for word in sentence.words:
@@ -66,5 +63,4 @@ def get_xpos_sentence(input_text):
         return result
     
 if __name__ == "__main__":
-    # print(get_upos_sentence(input("Enter a sentence: ")))
     print(get_xpos_sentence(input("Enter a sentence: ")))
