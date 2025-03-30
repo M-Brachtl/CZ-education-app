@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi.responses import FileResponse
 import uvicorn
-# import nlp_stanza # import the nlp_stanza.py file
+import nlp_stanza # import the nlp_stanza.py file
 
 
 app = FastAPI()
