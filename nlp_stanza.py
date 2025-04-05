@@ -70,7 +70,8 @@ morphology_key_conversion = {
     "Tense": "Čas",
     "Aspect": "Vid",
     "Mood": "Způsob",
-    "Voice": "Slovesný rod"
+    "Voice": "Slovesný rod",
+    "VerbForm": "Slovesná forma"
 }
 morphology_value_conversion = {
     "Case": {
@@ -99,7 +100,8 @@ morphology_value_conversion = {
     "Mood": {
     "Ind": "oznamovací",
     "Imp": "rozkazovací",
-    "Sub": "podmiňovací"},
+    "Sub": "podmiňovací",
+    "Cnd": "podmiňovací",},
     "Voice": {
     "Act": "činný",
     "Pass": "trpný"},
@@ -110,14 +112,26 @@ morphology_value_conversion = {
     "Perf": "dokonavý",
     "Imp": "nedokonavý"}
 }
+
+
+
 def get_morphology_sentence(input_text):
     upos = get_upos_sentence(input_text)
-    clened_upos = upos.copy() # copy the dictionary to avoid modifying the original
-    for word in upos.keys(): # zajímají nás pouze podst. jm. a slovesa
-        if not (upos[word] == "NOUN" or upos[word] == "VERB" or upos[word] == "PROPN"):
-            clened_upos.pop(word)
     doc = nlp(input_text)
-    print(doc.sentences,file=open("nlp_log.txt", "w"))
+    mitrad = 0 # pokud je mitrad==1, tak se neprovádí morfologie pro sloveso mít
+    ## sloveso mít rád (hledám rád v doc.sentences, pokud je tam, tak mitrad=1)
+    for sentence in doc.sentences:
+        for word in sentence.words:
+            if word.lemma == "rád":
+                if doc.sentences[0].words[word.head].lemma == "mít":
+                    mitrad = 1
+                    break
+    ## END
+    clened_upos = upos.copy() # copy the dictionary to avoid modifying the original
+    for word in upos.keys(): # zajímají nás pouze podst. jm. a slovesa a pomocná slovesa a nesmí být "mít", pokud mitrad==1
+        if not (upos[word] == "NOUN" or upos[word] == "VERB" or upos[word] == "PROPN" or upos[word] == "AUX"):
+            clened_upos.pop(word)
+    print(doc.sentences,file=open("nlp_log.txt", "w", encoding="utf-8")) # pro debugging
     for sentence in doc.sentences:
         result = {}
         for word in sentence.words:
@@ -130,7 +144,6 @@ def get_morphology_sentence(input_text):
     for word in result.keys():
         try:
             result[word] = result[word].split("|")
-            # order the features into a dictionary
             # result[word] = {feat.split("=")[0]: feat.split("=")[1] for feat in result[word]}
             real_result = {}
             for feat in result[word]:
@@ -149,4 +162,5 @@ def get_morphology_sentence(input_text):
 
 
 if __name__ == "__main__":
-    print(get_morphology_sentence(input("Enter a sentence: ")))
+    # print(get_morphology_sentence(input("Enter a sentence: ")))
+    print(get_upos_sentence(input("Enter a sentence: ")))
