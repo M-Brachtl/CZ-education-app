@@ -36,7 +36,7 @@ xpos_conversion = {
     "T": "Částice"
 }
 
-# input_text = "Příliš žluťoučký kůň úpěl ďábelské ódy."
+
 def get_upos_sentence(input_text): #určený pouze pro testování nebo morfologii
     doc = nlp(input_text)
     # print(doc.sentences)
@@ -116,36 +116,47 @@ morphology_value_conversion = {
 
 
 def get_morphology_sentence(input_text):
-    upos = get_upos_sentence(input_text)
+    # upos = get_upos_sentence(input_text)
     doc = nlp(input_text)
-    mitrad = 0 # pokud je mitrad==1, tak se neprovádí morfologie pro sloveso mít
-    ## sloveso mít rád (hledám rád v doc.sentences, pokud je tam, tak mitrad=1)
+    print(doc.sentences,file=open("nlp_log.txt", "w", encoding="utf-8")) # pro debugging
+    result = {}
+    mitrad_form = "" # zde bude forma "mít rád", až se bude zpracovávat feats
+    # normal morphology as lower in the original code
     for sentence in doc.sentences:
         for word in sentence.words:
             if word.lemma == "rád":
-                if doc.sentences[0].words[word.head].lemma == "mít":
-                    mitrad = 1
-                    break
-    ## END
-    clened_upos = upos.copy() # copy the dictionary to avoid modifying the original
-    for word in upos.keys(): # zajímají nás pouze podst. jm. a slovesa a pomocná slovesa a nesmí být "mít", pokud mitrad==1
-        if not (upos[word] == "NOUN" or upos[word] == "VERB" or upos[word] == "PROPN" or upos[word] == "AUX"):
-            clened_upos.pop(word)
-    print(doc.sentences,file=open("nlp_log.txt", "w", encoding="utf-8")) # pro debugging
-    for sentence in doc.sentences:
-        result = {}
-        for word in sentence.words:
-            try:
-                if word.text in clened_upos.keys():
+                if doc.sentences[0].words[word.head-1].lemma == "mít":
+                    result[word.text + " " + doc.sentences[0].words[word.head-1].text] = (word.feats, doc.sentences[0].words[word.head-1].feats)
+                    mitrad_form = word.text + " " + doc.sentences[0].words[word.head-1].text
+                    if doc.sentences[0].words[word.head-1].text in result.keys(): # pokud jsme na mít narazili dříve, tak ho vymažeme
+                        try:
+                            result.pop(doc.sentences[0].words[word.head-1].text)
+                        except KeyError:
+                            pass
+            elif word.upos == "NOUN" or word.upos == "VERB" or word.upos == "PROPN" or word.upos == "AUX":# zajímají nás pouze podst. jm. a slovesa a pomocná slovesa a nesmí být "mít", pokud mitrad==1
+                if word.lemma != "mít":
                     result[word.text] = word.feats
-                #result[word.text] = word.feats
-            except KeyError:
-                pass
     for word in result.keys():
         try:
+            real_result = {}
+            if word == mitrad_form:
+                for feat in result[word][0].split("|"):
+                    try:
+                        real_result[morphology_key_conversion[feat.split("=")[0]]] = morphology_value_conversion[feat.split("=")[0]][feat.split("=")[1]]
+                    except KeyError:# as e:
+                        # print(e)
+                        pass
+                for feat in result[word][1].split("|"):
+                    try:
+                        real_result[morphology_key_conversion[feat.split("=")[0]]] = morphology_value_conversion[feat.split("=")[0]][feat.split("=")[1]]
+                    except KeyError:# as e:
+                        # print(e)
+                        pass
+                result[word] = real_result
+                continue
+
             result[word] = result[word].split("|")
             # result[word] = {feat.split("=")[0]: feat.split("=")[1] for feat in result[word]}
-            real_result = {}
             for feat in result[word]:
                 try:
                     # result[word] = {morphology_key_conversion[feat.split("=")[0]]: morphology_value_conversion[feat.split("=")[0]][feat.split("=")[1]]}
@@ -162,5 +173,5 @@ def get_morphology_sentence(input_text):
 
 
 if __name__ == "__main__":
-    # print(get_morphology_sentence(input("Enter a sentence: ")))
-    print(get_upos_sentence(input("Enter a sentence: ")))
+    print(get_morphology_sentence(input("Enter a sentence: ")))
+    # print(get_upos_sentence(input("Enter a sentence: ")))
