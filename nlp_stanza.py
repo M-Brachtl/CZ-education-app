@@ -33,7 +33,8 @@ xpos_conversion = {
     "P": "Zájmeno",
     "J": "Spojka",
     "C": "Číslovka",
-    "T": "Částice"
+    "T": "Částice",
+    "I": "Citoslovce",
 }
 
 
@@ -71,7 +72,8 @@ morphology_key_conversion = {
     "Aspect": "Vid",
     "Mood": "Způsob",
     "Voice": "Slovesný rod",
-    "VerbForm": "Slovesná forma"
+    "VerbForm": "Slovesná forma",
+    "Animacy": "Životnost",
 }
 morphology_value_conversion = {
     "Case": {
@@ -110,7 +112,11 @@ morphology_value_conversion = {
     "Inf": "infinitiv"},
     "Aspect": {
     "Perf": "dokonavý",
-    "Imp": "nedokonavý"}
+    "Imp": "nedokonavý"},
+    "Animacy": {
+    "Anim": "životný",
+    "Inan": "neživotný"},
+
 }
 
 
@@ -120,8 +126,10 @@ def get_morphology_sentence(input_text):
     doc = nlp(input_text)
     print(doc.sentences,file=open("nlp_log.txt", "w", encoding="utf-8")) # pro debugging
     result = {}
+    used_words: list[int] = [] # indexy slov, které už byly zpracovány, aby se nezpracovávaly znovu ("mít rád" a zvratná slovesa)
     mitrad_form = "" # zde bude forma "mít rád", až se bude zpracovávat feats
     # normal morphology as lower in the original code
+    # reflexives = []
     for sentence in doc.sentences:
         for word in sentence.words:
             if word.lemma == "rád":
@@ -133,9 +141,22 @@ def get_morphology_sentence(input_text):
                             result.pop(doc.sentences[0].words[word.head-1].text)
                         except KeyError:
                             pass
+                    used_words.append(word.head) # přidáme mít do seznamu zpracovaných slov, aby se nezpracovávalo znovu
+                    used_words.append(word.id) # přidáme rád
+            elif word.lemma == "se": # pro zvratné sloveso
+                result[doc.sentences[0].words[word.head-1].text + " " + word.text] = doc.sentences[0].words[word.head-1].feats # mluv. kategorie zvratného zájmena nepotřebujeme
+                # reflexives.append(doc.sentences[0].words[word.head-1].text + " " + word.text)
+                if doc.sentences[0].words[word.head-1].text in result.keys(): # pokud jsme na mít narazili dříve, tak ho vymažeme
+                    try:
+                        result.pop(doc.sentences[0].words[word.head-1].text)
+                    except KeyError:
+                        pass
+                used_words.append(word.head) # přidáme významové sloveso do seznamu zpracovaných slov, aby se nezpracovávalo znovu
+                used_words.append(word.id) # přidáme zvratné zájmeno
             elif word.upos == "NOUN" or word.upos == "VERB" or word.upos == "PROPN" or word.upos == "AUX":# zajímají nás pouze podst. jm. a slovesa a pomocná slovesa a nesmí být "mít", pokud mitrad==1
-                if word.lemma != "mít":
+                if word.lemma != "mít" and word.id not in used_words: # pokud není mít a není už zpracováno
                     result[word.text] = word.feats
+                    # možná přidat do used_words?
     for word in result.keys():
         try:
             real_result = {}
