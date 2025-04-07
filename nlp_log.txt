@@ -1,0 +1,99 @@
+[[
+  {
+    "id": 1,
+    "text": "Můj",
+    "lemma": "můj",
+    "upos": "DET",
+    "xpos": "PSYS1-S1-------",
+    "feats": "Case=Nom|Gender=Masc|Number=Sing|Number[psor]=Sing|Person=1|Poss=Yes|PronType=Prs",
+    "head": 2,
+    "deprel": "det",
+    "start_char": 0,
+    "end_char": 3
+  },
+  {
+    "id": 2,
+    "text": "bratr",
+    "lemma": "bratr",
+    "upos": "NOUN",
+    "xpos": "NNMS1-----A----",
+    "feats": "Animacy=Anim|Case=Nom|Gender=Masc|Number=Sing",
+    "head": 3,
+    "deprel": "nsubj",
+    "start_char": 4,
+    "end_char": 9
+  },
+  {
+    "id": 3,
+    "text": "založil",
+    "lemma": "založit",
+    "upos": "VERB",
+    "xpos": "VpYS----R-AAP--",
+    "feats": "Aspect=Perf|Gender=Masc|Number=Sing|Polarity=Pos|Tense=Past|VerbForm=Part|Voice=Act",
+    "head": 0,
+    "deprel": "root",
+    "start_char": 10,
+    "end_char": 17
+  },
+  {
+    "id": 4,
+    "text": "druhý",
+    "lemma": "druhý",
+    "upos": "ADJ",
+    "xpos": "CrIS4----------",
+    "feats": "Animacy=Inan|Case=Acc|Gender=Masc|NumType=Ord|Number=Sing",
+    "head": 7,
+    "deprel": "amod",
+    "start_char": 18,
+    "end_char": 23
+  },
+  {
+    "id": 5,
+    "text": "největší",
+    "lemma": "velký",
+    "upos": "ADJ",
+    "xpos": "AAIS4----3A----",
+    "feats": "Animacy=Inan|Case=Acc|Degree=Sup|Gender=Masc|Number=Sing|Polarity=Pos",
+    "head": 7,
+    "deprel": "amod",
+    "start_char": 24,
+    "end_char": 32
+  },
+  {
+    "id": 6,
+    "text": "pražský",
+    "lemma": "pražský",
+    "upos": "ADJ",
+    "xpos": "AAIS4----1A----",
+    "feats": "Animacy=Inan|Case=Acc|Degree=Pos|Gender=Masc|Number=Sing|Polarity=Pos",
+    "head": 7,
+    "deprel": "amod",
+    "start_char": 33,
+    "end_char": 40
+  },
+  {
+    "id": 7,
+    "text": "hrad",
+    "lemma": "hrad",
+    "upos": "NOUN",
+    "xpos": "NNIS4-----A----",
+    "feats": "Animacy=Inan|Case=Acc|Gender=Masc|Number=Sing",
+    "head": 3,
+    "deprel": "obj",
+    "start_char": 41,
+    "end_char": 45,
+    "misc": "SpaceAfter=No"
+  },
+  {
+    "id": 8,
+    "text": ".",
+    "lemma": ".",
+    "upos": "PUNCT",
+    "xpos": "Z:-------------",
+    "head": 3,
+    "deprel": "punct",
+    "start_char": 45,
+    "end_char": 46,
+    "misc": "SpaceAfter=No"
+  }
+]]
