@@ -14,7 +14,7 @@
     "><br>
     <button onclick="
         const sentence = document.getElementById('sentence').value;
-        fetch(`http://localhost:8000/pos/{${sentence}}`).then(response => response.json())
+        fetch(`http://localhost:8000/pos/${sentence}`).then(response => response.json())
         .then(data => {
             console.log(data);
             document.getElementById('response').innerText = JSON.stringify(data);
@@ -23,5 +23,21 @@
     <!-- response -->
     <p>Response:</p>
     <p id="response"></p>
+    <h2>Morphology</h2>
+    <label for="sentenceMorph">Enter a sentence:</label><br>
+    <input type="text" id="sentenceMorph" style="
+        width: -webkit-fill-available;
+    "><br>
+    <button onclick="
+        const sentenceMorph = document.getElementById('sentenceMorph').value;
+        fetch(`http://localhost:8000/morph/${sentenceMorph}`).then(response => response.json())
+        .then(data => {
+            console.log(data);
+            document.getElementById('responseMorph').innerText = JSON.stringify(data);
+        });
+    ">Send</button>
+    <!-- response -->
+    <p>Response:</p>
+    <p id="responseMorph"></p>
 </body>
 </html>

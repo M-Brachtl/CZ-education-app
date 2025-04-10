@@ -1,5 +1,11 @@
 # Edukační aplikace pro gramatické jevy v českém jazyce
 
+## Contents
+* [Setup Instructions](#setup-instructions)
+* [Frontend repository](https://github.com/Tucnuc/Czech-Education-App)
+* [Usage](#usage)
+
+
 ## Setup Instructions
 
 ### Step 1: Set up a Virtual Environment
@@ -40,3 +46,11 @@
     ```
 
 You are now ready to use the application.
+
+## Usage
+### Running the code
+After you've set up your virtual environment, you can launch the code by running main.py file.
+### Testing the code
+The testing html is available on [localhost:8000/test/test.html](http://localhost:8000/test/test.html)
+### Using the app
+The full version of the app with frontend is availeble on [localhost:8000/Czech-Education-App](localhost:8000/Czech-Education-App)

@@ -28,5 +28,10 @@ def read_root(input_sentence: str):
     print(input_sentence)
     return nlp_stanza.get_xpos_sentence(input_sentence)
 
+@app.get("/morph/{input_sentence}")
+def read_root(input_sentence: str):
+    print(input_sentence)
+    return nlp_stanza.get_morphology_sentence(input_sentence)
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
