@@ -36,6 +36,19 @@ xpos_conversion = {
     "T": "Částice",
     "I": "Citoslovce",
 }
+xpos_num_conversion = {
+    "N": 1,
+    "A": 2,
+    "P": 3,
+    "C": 4,
+    "V": 5,
+    "D": 6,
+    "R": 7,
+    "J": 8,
+    "T": 9,
+    "I": 10,
+}
+
 
 
 def get_upos_sentence(input_text): #určený pouze pro testování nebo morfologii
@@ -58,7 +71,7 @@ def get_xpos_sentence(input_text):
         result = {}
         for word in sentence.words:
             try:
-                result[word.text] = xpos_conversion[word.xpos[0]]
+                result[word.text] = xpos_num_conversion[word.xpos[0]] #xpos_conversion[word.xpos[0]], chceme-li slovy
             except KeyError:
                 pass
         return result
@@ -194,5 +207,5 @@ def get_morphology_sentence(input_text):
 
 
 if __name__ == "__main__":
-    print(get_morphology_sentence(input("Enter a sentence: ")))
-    # print(get_upos_sentence(input("Enter a sentence: ")))
+    # print(get_morphology_sentence(input("Enter a sentence: ")))
+    print(get_xpos_sentence(input("Enter a sentence: ")))
