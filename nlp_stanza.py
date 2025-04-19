@@ -169,11 +169,10 @@ def get_morphology_sentence(input_text):
             elif word.upos == "NOUN" or word.upos == "VERB" or word.upos == "PROPN" or word.upos == "AUX":# zajímají nás pouze podst. jm. a slovesa a pomocná slovesa a nesmí být "mít", pokud mitrad==1
                 if word.lemma != "mít" and word.id not in used_words: # pokud není mít a není už zpracováno
                     result[word.text] = word.feats
-                    # možná přidat do used_words?
-    for word in result.keys():
+    for word in result.keys(): # převedení stringu v AJ na dict v ČJ
         try:
-            real_result = {}
-            if word == mitrad_form:
+            real_result = {} # unikátní výsledek pro každé slovo, pak se přidá do result
+            if word == mitrad_form: # sloveso mít + rád, které je zpracováno jako jedno slovo
                 for feat in result[word][0].split("|"):
                     try:
                         real_result[morphology_key_conversion[feat.split("=")[0]]] = morphology_value_conversion[feat.split("=")[0]][feat.split("=")[1]]
@@ -186,18 +185,70 @@ def get_morphology_sentence(input_text):
                     except KeyError:# as e:
                         # print(e)
                         pass
+                # zkontrolovat, jestli má minulý čas a pokud ano, tak jestli má osobu. Pokud ne -> přidat osobu 3.
+                if "Tense=Past" in result[word][1] and "Person" not in result[word][1]:
+                    real_result["Osoba"] = 3
                 result[word] = real_result
                 continue
+            # první zjistíme, jestli není pomocné - najdeme ho v nlp výstupu a najdeme jeho head, jeho head pak hledáme v real_result, pokud tam není, tak upravíme result
+            for NLPword in sentence.words:
+                if NLPword.text == word and NLPword.upos == "AUX":
+                    my_head = sentence.words[NLPword.head-1] # head je 1...n, takže musíme odečíst 1
+                    # podmínky: je sloveso, má ve feats "Tense=Past"; MŮŽE být mít rád a zvratné, protože stále může mít pomocné být
+                    if my_head.upos == "VERB" and my_head.feats != "_" and "Tense=Past" in my_head.feats:
+                        #   hledáme v resultech sloveso, které obsahuje pomocné sloveso (ale může tam toho být víc (např. *měl* rád))
+                        result_copy = result.copy() # uděláme kopii, abychom mohli upravit result a předešli změnám během iterace
+                        for key in result_copy.keys():
+                            if my_head.text in key:
+                                # 2 možnosti: už je zpracované (a je type dict) nebo není (a je type str)
+                                for feat in result[word].split("|"):
+                                    try:
+                                        real_result[morphology_key_conversion[feat.split("=")[0]]] = morphology_value_conversion[feat.split("=")[0]][feat.split("=")[1]]
+                                    except KeyError:
+                                        pass
+                                if type(result[key]) == dict: # pokud už je zpracované, tak ho nebudeme znovu zpracovávat
+                                    result[word] = real_result
+                                    # nyní dodáme do významového
+                                    for category, value in result[word].items():
+                                        if category == "Osoba":
+                                            result[key][category] = value
+                                        elif category == "Způsob" and value == "podmiňovací":
+                                            result[key][category] = value
+                                            result[key]["Čas"] = "přítomný"
+                                elif type(result[key]) == str: # pokud není zpracované, tak ho zpracujeme
+                                    # odděláme čas, protože pomocné sloveso neurčuje čas významového
+                                    if not "Mood=Ind" in result[word]:
+                                        result[key] = result[key].replace("Tense=Past", "Tense=Pres") # podmiňovací způsob je v přítomném čase
+                                        result[f"{key} ({word})"] = result[key] + "|" + result[word]
+                                    else:
+                                        result[f"{key} ({word})"] = result[key] + "|" + result[word].replace("Tense=Pres", "")
+                                    # a vymažeme původní key
+                                    result.pop(key)
+                                    result[word] = real_result
+                                elif type(result[key]) == tuple: # pokud je to tuple, tak ho zpracujeme jako sloveso mít rád
+                                    # odděláme čas, protože pomocné sloveso neurčuje čas významového
+                                    result[key][0].replace("Tense=Past", "Tense=Pres")
+                                    result[f"{key} ({word})"] = [result[key][0] + "|" + result[word], result[key][1]]
 
-            result[word] = result[word].split("|")
-            # result[word] = {feat.split("=")[0]: feat.split("=")[1] for feat in result[word]}
-            for feat in result[word]:
-                try:
-                    # result[word] = {morphology_key_conversion[feat.split("=")[0]]: morphology_value_conversion[feat.split("=")[0]][feat.split("=")[1]]}
-                    real_result[morphology_key_conversion[feat.split("=")[0]]] = morphology_value_conversion[feat.split("=")[0]][feat.split("=")[1]]
-                except KeyError:
-                    pass
-            result[word] = real_result
+                                    mitrad_form = f"{key} ({word})" # aby se spustila výjimka v kódu výše
+                                    # a vymažeme původní key
+                                    result.pop(key)
+                                    result[word] = real_result
+            try:
+                result[word] = result[word].split("|") # pokud je to pomocné sloveso, pak je zpracováno výše -> AttributeError
+                # result[word] = {feat.split("=")[0]: feat.split("=")[1] for feat in result[word]}
+                for feat in result[word]:
+                    try:
+                        # result[word] = {morphology_key_conversion[feat.split("=")[0]]: morphology_value_conversion[feat.split("=")[0]][feat.split("=")[1]]}
+                        real_result[morphology_key_conversion[feat.split("=")[0]]] = morphology_value_conversion[feat.split("=")[0]][feat.split("=")[1]]
+                    except KeyError:
+                        pass
+                # zkontrolovat, jestli má minulý čas a pokud ano, tak jestli má osobu. Pokud ne -> přidat osobu 3.
+                if "Tense=Past" in result[word] and "Person" not in result[word]:
+                    real_result["Osoba"] = 3
+                result[word] = real_result
+            except AttributeError:
+                pass
         except KeyError:
             pass
 
@@ -207,5 +258,5 @@ def get_morphology_sentence(input_text):
 
 
 if __name__ == "__main__":
-    # print(get_morphology_sentence(input("Enter a sentence: ")))
-    print(get_xpos_sentence(input("Enter a sentence: ")))
+    print(get_morphology_sentence(input("Enter a sentence: ")))
+    # print(get_xpos_sentence(input("Enter a sentence: ")))
