@@ -71,6 +71,11 @@ def get_xpos_sentence(input_text):
         result = {}
         for word in sentence.words:
             try:
+                # pokud se rád pojí na slovo, které není v rámci přísudku, tak musíme ručně 2->6
+                if word.lemma == "rád" and doc.sentences[0].words[word.head-1].lemma != "být" and word.head != 0: # au
+                    word.xpos = "D" + word.xpos[1:] # aby se to neukazovalo jako příd. jm., ale jako příslovce
+                elif word.lemma == "rád" and (doc.sentences[0].words[word.head-1].lemma == "být" or word.head == 0): # au^2
+                    word.xpos = "A" + word.xpos[1:]
                 result[word.text] = xpos_num_conversion[word.xpos[0]] #xpos_conversion[word.xpos[0]], chceme-li slovy
             except KeyError:
                 pass
@@ -146,6 +151,11 @@ def get_morphology_sentence(input_text):
     for sentence in doc.sentences:
         for word in sentence.words:
             if word.lemma == "rád":
+                if (doc.sentences[0].words[word.head-1].upos != "VERB" and doc.sentences[0].words[word.head-1].upos != "AUX") or word.head == 0:
+                    # hledáme "mít"
+                    for word2 in sentence.words:
+                        if word2.lemma == "mít":
+                            word.head = word2.id # nastavíme head na mít, aby se to zpracovalo jako mít rád
                 if doc.sentences[0].words[word.head-1].lemma == "mít":
                     result[word.text + " " + doc.sentences[0].words[word.head-1].text] = (word.feats, doc.sentences[0].words[word.head-1].feats)
                     mitrad_form = word.text + " " + doc.sentences[0].words[word.head-1].text
@@ -155,7 +165,7 @@ def get_morphology_sentence(input_text):
                         except KeyError:
                             pass
                     used_words.append(word.head) # přidáme mít do seznamu zpracovaných slov, aby se nezpracovávalo znovu
-                    used_words.append(word.id) # přidáme rád
+                    used_words.append(word.id) # přidáme rád:
             elif word.lemma == "se": # pro zvratné sloveso
                 result[doc.sentences[0].words[word.head-1].text + " " + word.text] = doc.sentences[0].words[word.head-1].feats # mluv. kategorie zvratného zájmena nepotřebujeme
                 # reflexives.append(doc.sentences[0].words[word.head-1].text + " " + word.text)
