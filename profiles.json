@@ -1,0 +1,10 @@
+[
+    {
+        "username": "john_doe",
+        "password": "password123",
+        "darkmode": false,
+        "friends": ["jane_smith", "bob_jones"],
+        "level": 1,
+        "profile_picture": "default.png"
+    }
+]
