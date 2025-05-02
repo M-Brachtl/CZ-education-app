@@ -3,9 +3,33 @@
         "username": "john_doe",
         "password": "password123",
         "darkmode": false,
-        "friends": ["jane_smith", "bob_jones"],
+        "friends": [
+            "jane_smith"
+        ],
         "level": 1,
         "profile_picture": "default.png",
+        "xp": 0,
+        "logged-in": true
+    },
+    {
+        "username": "jane_smith",
+        "password": "yay256",
+        "darkmode": false,
+        "friends": [
+            "john_doe"
+        ],
+        "level": 1,
+        "profile_picture": "default.png",
+        "xp": 0,
+        "logged-in": false
+    },
+    {
+        "username": "ree_desi",
+        "password": "Sideri652",
+        "darkmode": true,
+        "friends": [],
+        "level": 1,
+        "profile_picture": "ree_desi.png",
         "xp": 0,
         "logged-in": true
     }

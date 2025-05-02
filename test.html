@@ -23,6 +23,7 @@
     <!-- response -->
     <p>Response:</p>
     <p id="response"></p>
+    <hr>
     <h2>Morphology</h2>
     <label for="sentenceMorph">Enter a sentence:</label><br>
     <input type="text" id="sentenceMorph" style="
@@ -39,5 +40,84 @@
     <!-- response -->
     <p>Response:</p>
     <p id="responseMorph"></p>
+    <hr>
+    <h2>Login & Register</h2>
+    <p>Uživatelské jméno: <input type="text" id="username"></p>
+    <p>Heslo: <input type="password"></p>
+    <button onclick="loginRegister('login')">Přihlásit se</button>
+    <button onclick="loginRegister('register')">Registrovat se</button>
+    <h3>Response:</h3>
+    <p id="responseProfile"></p>
+    <script>
+        function loginRegister(type){
+            const username = document.querySelector('input#username').value;
+            const password = document.querySelector('input[type=password]').value;
+            fetch(window.location.origin + `/profile/${type}/${username}/${password}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('responseProfile').innerText = JSON.stringify(data);
+            });
+        }
+    </script>
+    <hr>
+    <h2>Friends</h2>
+    <p>Uživatelské jméno přítele: <input type="text" id="usernameFriend"></p>
+    <p>Vaše uživatelské jméno: <input type="text" id="usernameF"></p>
+    <button onclick="friend('add')">Přidat přítele</button>
+    <button onclick="friend('remove')">Odebrat přítele</button>
+    <h3>Response:</h3>
+    <p id="responseFriends"></p>
+    <script>
+        function friend(type){
+            const friend = document.querySelector('input#usernameFriend').value;
+            const username = document.querySelector('input#usernameF').value;
+            fetch(window.location.origin + `/profile/${type}-friend/${username}/${friend}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('responseFriends').innerText = JSON.stringify(data);
+            });
+        }
+    </script>
+    <h2>Profile Picture</h2>
+    <img src="profile/images/default.png" alt="profile picture">
+    <p>Uživatelské jméno: <input type="text" id="usernamePP"></p>
+    <input type="file" id="filePP" accept="image/*"><br>
+    <button onclick="uploadPP()">Upload</button>
+    <h3>Response:</h3>
+    <p id="responsePicture"></p>
+    <script>
+        function uploadPP(){
+            // from fastapi:
+            /* @app.post("/profile/change-profile-picture") # změna profilového obrázku
+                def change_profile_picture(username: str, file: bytes, filetype: str):
+            */
+            const username = document.querySelector('input#usernamePP').value;
+            const file = document.querySelector('input#filePP').files[0];
+
+            // file to bytes
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(file);
+            reader.onload = function() {
+                const bytes = new Uint8Array(reader.result);
+                const filetype = "." + file.type.split('/')[1]; // get file type from file name
+                fetch(window.location.origin + `/profile/change-profile-picture`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        file: Array.from(bytes),
+                        filetype: filetype
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('responsePicture').innerText = JSON.stringify(data);
+                    document.querySelector('img').src = window.location.origin + "/profile/images/" + username + filetype;
+                });
+            };
+        }
+    </script>
 </body>
 </html>
