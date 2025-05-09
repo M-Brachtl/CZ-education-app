@@ -179,6 +179,8 @@ def get_morphology_sentence(input_text):
             elif word.upos == "NOUN" or word.upos == "VERB" or word.upos == "PROPN" or word.upos == "AUX":# zajímají nás pouze podst. jm. a slovesa a pomocná slovesa a nesmí být "mít", pokud mitrad==1
                 if word.lemma != "mít" and word.id not in used_words: # pokud není mít a není už zpracováno
                     result[word.text] = word.feats
+            elif not word.upos == "PUNCT" and word.id not in used_words: # pokud není interpunkce a není už zpracováno
+                result[word.text] = "" # pokud je to jiný slovní druh (ne interpunkce), tak vrátíme prázdný string
     for word in result.keys(): # převedení stringu v AJ na dict v ČJ
         try:
             real_result = {} # unikátní výsledek pro každé slovo, pak se přidá do result
