@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 import json
 import nlp_stanza # import the nlp_stanza.py file
 
 from pydantic import BaseModel
+
 
 app = FastAPI()
 
@@ -21,6 +23,14 @@ app.mount("/Czech-Education-App/", StaticFiles(directory="docs", html=True), nam
 
 app.mount("/profile/images", StaticFiles(directory="profile-images"), name="profile-images")
 # přístup k homepage: http://localhost:8000/Czech-Education-App/home
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200"],  # Angular dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def profile_exists(username: str) -> int:
     try:
