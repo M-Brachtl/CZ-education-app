@@ -3,7 +3,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import json
-import nlp_stanza # import the nlp_stanza.py file
+import nlp_stanza # import the nlp_stanza.py file - NLP funkce
+import tense_gen # import the tense_gen.py file - generování vět
 
 from pydantic import BaseModel
 
@@ -61,6 +62,16 @@ def read_root(input_sentence: str):
 def read_root(input_sentence: str):
     print(input_sentence)
     return nlp_stanza.get_morphology_sentence(input_sentence)
+
+# Sentence generation
+@app.get("/generate")
+def read_root():
+    sentence = tense_gen.generate_sentence()
+    return {
+        "sentence": sentence,
+        "morph": nlp_stanza.get_morphology_sentence(sentence),
+        "pos": nlp_stanza.get_xpos_sentence(sentence)
+    }
 
 # User profile functions
 @app.get("/profile/login/{username}/{password}") # přihlášení uživatele

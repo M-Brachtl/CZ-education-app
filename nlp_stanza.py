@@ -53,7 +53,7 @@ xpos_num_conversion = {
 
 
 
-def get_upos_sentence(input_text): #určený pouze pro testování nebo morfologii
+def get_upos_sentence(input_text): #určený pouze pro testování
     doc = nlp(input_text)
     # print(doc.sentences)
 

@@ -34,7 +34,7 @@
 1. Ensure the virtual environment is activated.
 2. Install the required packages with the specified versions:
     ```sh
-    pip install stanza==1.10.1 fastapi==0.115.8 uvicorn==0.34.0
+    pip install stanza==1.10.1 fastapi==0.115.8 uvicorn==0.34.0 mistralai==1.7.0
     ```
 
 ### Step 3: Run the Installation Script
@@ -43,6 +43,15 @@
 2. Run the  script:
     ```sh
     python install.py
+    ```
+
+### Step 4: Set up API Key as an Environment Variable
+
+1. Obtain your API key from [Mistral AI](https://mistral.ai/products/la-plateforme).
+2. Create a `.env` file in the root directory of your project.
+3. Add the following line to the `.env` file, replacing `your_api_key_here` with your actual API key:
+    ```
+    MISTRAL_API_KEY=your_api_key_here
     ```
 
 You are now ready to use the application.

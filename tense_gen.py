@@ -1,0 +1,23 @@
+import os
+from mistralai import Mistral
+
+api_key = os.environ["MISTRAL_API_KEY"]
+model = "mistral-large-2407"
+
+client = Mistral(api_key=api_key)
+
+def generate_sentence():
+    chat_response = client.chat.complete(
+        model= model,
+        messages = [
+            {
+                "role": "user",
+                "content": "Napiš 1 větu v češtině. Nepiš nic jiného než větu. Větu nepřekládej.",
+            },
+        ],# i want it creative, so high temperature
+        temperature=0.9,
+    )
+    return chat_response.choices[0].message.content
+
+if __name__ == "__main__":
+    print(generate_sentence())
