@@ -184,6 +184,28 @@ def read_root(username: str, xp: int, level: int):
     json.dump(profile_data, open("profiles.json", "w"),indent=4)
     return {"success": "Postup byl úspěšně aktualizován"}
 
+@app.get("/profile/logout/{username}") # odhlášení uživatele
+def read_root(username: str):
+    profile_data = json.load(open("profiles.json", "r"))
+    profile_index = profile_exists(username)
+    if profile_index > -1:
+        if profile_data[profile_index]["logged-in"] == False:
+            return {"error": "Nejste přihlášeni"}
+    else:
+        return {"error": "Uživatelské jméno neexistuje"}
+    profile_data[profile_index]["logged-in"] = False
+    json.dump(profile_data, open("profiles.json", "w"),indent=4)
+    return {"success": "Byli jste úspěšně odhlášeni"}
+
+# vypiš všechny usernamy
+@app.get("/profile/usernames")
+def read_root():
+    profile_data = json.load(open("profiles.json", "r"))
+    usernames = []
+    for user in profile_data:
+        usernames.append(user["username"])
+    return usernames
+
 # if __name__ == "__main__":
 #     uvicorn.run(app, host="127.0.0.1", port=8000)
 
