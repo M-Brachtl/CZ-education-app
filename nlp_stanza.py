@@ -1,8 +1,9 @@
 import stanza
-import stanza.models
-import stanza.models.common
-import stanza.models.common.doc
+import requests
 nlp = stanza.Pipeline("cs", download_method=stanza.DownloadMethod.REUSE_RESOURCES) # load czech language model
+
+mphDita = lambda sentence: f"https://lindat.mff.cuni.cz/services/morphodita/api/tag?data={sentence}&output=json&convert_tagset=strip_lemma_id" # použití Morphodita API
+genDita = lambda lemma: f"https://lindat.mff.cuni.cz/services/morphodita/api/generate?data={lemma}&convert_tagset=pdt_to_conll2009&output=json" # použití Morphodita API pro genitiv
 
 upos_convertion = {
     "NOUN": "Podstatné jméno",
@@ -67,18 +68,19 @@ def get_upos_sentence(input_text): #určený pouze pro testování
         return result
     
 def get_xpos_sentence(input_text):
-    doc = nlp(input_text)
-    print(doc.sentences,file=open("nlp_log.txt", "w"))
-    for sentence in doc.sentences:
+    doc = requests.get(mphDita(input_text)).json()["result"]
+    # print(doc)
+    print(doc[0],file=open("nlp_log.txt", "w"))
+    for sentence in doc:
         result = {}
-        for word in sentence.words:
+        for word in sentence:
             try:
-                # pokud se rád pojí na slovo, které není v rámci přísudku, tak musíme ručně 2->6
+                """# pokud se rád pojí na slovo, které není v rámci přísudku, tak musíme ručně 2->6
                 if word.lemma == "rád" and doc.sentences[0].words[word.head-1].lemma != "být" and word.head != 0: # au
                     word.xpos = "D" + word.xpos[1:] # aby se to neukazovalo jako příd. jm., ale jako příslovce
                 elif word.lemma == "rád" and (doc.sentences[0].words[word.head-1].lemma == "být" or word.head == 0): # au^2
-                    word.xpos = "A" + word.xpos[1:]
-                result[word.text] = xpos_num_conversion[word.xpos[0]] #xpos_conversion[word.xpos[0]], chceme-li slovy
+                    word.xpos = "A" + word.xpos[1:]"""
+                result[word["token"]] = xpos_num_conversion[word["tag"][0]] #xpos_conversion[word["tag"][0]], chceme-li slovy
             except KeyError:
                 pass
         return result
@@ -94,6 +96,7 @@ morphology_key_conversion = {
     "Voice": "Slovesný rod",
     "VerbForm": "Slovesná forma",
     "Animacy": "Životnost",
+    "Vzor": "Vzor",
 }
 morphology_value_conversion = {
     "Case": {
@@ -136,7 +139,22 @@ morphology_value_conversion = {
     "Animacy": {
     "Anim": "životný",
     "Inan": "neživotný"},
-
+    "Vzor": { # pro účely kódu
+    "pán": "pán",
+    "hrad": "hrad",
+    "muž": "muž",
+    "stroj": "stroj",
+    "předseda": "předseda",
+    "soudce": "soudce",
+    "žena": "žena",
+    "růže": "růže",
+    "píseň": "píseň",
+    "kost": "kost",
+    "město": "město",
+    "moře": "moře",
+    "kuře": "kuře",
+    "stavení": "stavení",
+    }
 }
 
 
@@ -183,6 +201,9 @@ def get_morphology_sentence(input_text):
                     result[word.text] = word.feats
             elif word.id not in used_words: # pokud není už zpracováno
                 result[word.text] = "" # pokud je to jiný slovní druh (nebo interpunkce), tak vrátíme prázdný string
+            if word.upos == "NOUN":
+                vzor = get_vzor(word.feats, word.lemma)
+                result[word.text] += "|Vzor=" + vzor
     for word in result.keys(): # převedení stringu v AJ na dict v ČJ
         try:
             real_result = {} # unikátní výsledek pro každé slovo, pak se přidá do result
@@ -260,6 +281,8 @@ def get_morphology_sentence(input_text):
                 # zkontrolovat, jestli má minulý čas a pokud ano, tak jestli má osobu. Pokud ne -> přidat osobu 3.
                 if "Tense=Past" in result[word] and "Person" not in result[word]:
                     real_result["Osoba"] = 3
+
+            
                 result[word] = real_result
             except AttributeError:
                 pass
@@ -269,8 +292,74 @@ def get_morphology_sentence(input_text):
 
     return result
 
+def get_vzor(feats, nominative: str):
+    nominative = nominative.lower()
+    vzory = {
+    "Masc": [
+        ("pán", "", "a"),
+        ("hrad", "", "u"),
+        ("muž", "", "e"),
+        ("stroj", "", "e"),
+        ("předseda", "a", "y"),
+        ("soudce", "e", "e")
+    ],
+    "Fem": [
+        ("žena", "a", "y"),
+        ("růže", "e", "e"),
+        ("píseň", "", "e"),
+        ("kost", "", "i")
+    ],
+    "Neut": [
+        ("město", "o", "a"),
+        ("moře", "e", "e"),
+        ("kuře", "e", "ete"),
+        ("stavení", "í", "í")
+    ]
+    }
+
+    if "Gender=Masc" in feats:
+        relevant_vzory = vzory["Masc"]
+        # kontrola životnosti
+        if "Animacy=Inan" in feats:
+            relevant_vzory.remove(("pán", "", "a"))
+            relevant_vzory.remove(("předseda", "a", "y"))
+            relevant_vzory.remove(("soudce", "e", "e"))
+            relevant_vzory.remove(("muž", "", "e"))
+        elif "Animacy=Anim" in feats:
+            relevant_vzory.remove(("hrad", "", "u"))
+            relevant_vzory.remove(("stroj", "", "e"))
+    elif "Gender=Fem" in feats:
+        relevant_vzory = vzory["Fem"]
+    elif "Gender=Neut" in feats:
+        relevant_vzory = vzory["Neut"]
+    else:
+        return "N/A"
+    genitive = ""
+    for generated in requests.get(genDita(nominative)).json()["result"][0]:
+        if "Cas=2" in generated["tag"] and "Num=S" in generated["tag"]:
+            genitive = generated["form"]
+            break
+    nom_ending = nominative[-1] if nominative[-1] in ("a", "e", "í", "o", "ě") else ""
+    if nom_ending == "ě": nom_ending = "e"
+    relevant_vzory = list(filter(lambda x: x[1] == nom_ending, relevant_vzory))
+
+    if genitive[-3:] == "ete" or genitive[-3:] == "ěte":
+        gen_ending = genitive[-3:]
+    elif genitive[-1] in ("a", "e", "y", "í", "i", "ě"):
+        gen_ending = genitive[-1]
+    else:
+        gen_ending = ""
+
+    if gen_ending == "ě": gen_ending = "e"
+    elif gen_ending == "ěte": gen_ending = "ete"
+    if "Gender=Neut" not in feats and gen_ending == "ete": gen_ending = "e"
+
+    relevant_vzory = list(filter(lambda x: x[2] == gen_ending, relevant_vzory))
+
+    return list(relevant_vzory)[0][0] if len(list(relevant_vzory)) > 0 else "N/A"
 
 
 if __name__ == "__main__":
     print(get_morphology_sentence(input("Enter a sentence: ")))
     # print(get_xpos_sentence(input("Enter a sentence: ")))
+    # print(get_vzor("Gender=Fem", "maličkost"))
