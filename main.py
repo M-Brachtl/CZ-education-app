@@ -206,6 +206,74 @@ def read_root():
         usernames.append(user["username"])
     return usernames
 
+# darkmode
+@app.get("/profile/darkmode/{username}/{darkmode}")
+def read_root(username: str, darkmode: bool):
+    profile_data = json.load(open("profiles.json", "r"))
+    profile_index = profile_exists(username)
+    if profile_index > -1:
+        if profile_data[profile_index]["logged-in"] == False:
+            return {"error": "Nejste přihlášeni"}
+    else:
+        return {"error": "Uživatelské jméno neexistuje"}
+    profile_data[profile_index]["darkmode"] = darkmode
+    json.dump(profile_data, open("profiles.json", "w"),indent=4)
+    return {"success": "Darkmode byl úspěšně změněn"}
+
+#change login
+@app.get("/profile/change-login/{username}/{new_username}/{new_password}")
+def read_root(username: str, new_username: str, new_password: str):
+    profile_data = json.load(open("profiles.json", "r"))
+    profile_index = profile_exists(username)
+    if profile_index > -1:
+        if profile_data[profile_index]["logged-in"] == False:
+            return {"error": "Nejste přihlášeni"}
+    else:
+        return {"error": "Uživatelské jméno neexistuje"}
+    if profile_exists(new_username) > -1:
+        return {"error": "Uživatelské jméno již existuje"}
+    else:
+        profile_data[profile_index]["username"] = new_username
+        profile_data[profile_index]["password"] = new_password
+        json.dump(profile_data, open("profiles.json", "w"),indent=4)
+        return {"success": "Uživatelské jméno a heslo bylo úspěšně změněno"}
+
+# leaderboard
+@app.get("/leaderboard")
+def read_root():
+    profile_data = json.load(open("profiles.json", "r"))
+    leaderboard = []
+    for user in profile_data:
+        leaderboard.append({
+            "username": user["username"],
+            "xp": user["xp"],
+            "level": user["level"],
+            "profile_picture": user["profile_picture"]
+        })
+    leaderboard.sort(key=lambda x: x["xp"], reverse=True)
+    return leaderboard
+
+# get friends with xp and profile picture
+@app.get("/profile/get-friends/{username}")
+def read_root(username: str):
+    profile_data = json.load(open("profiles.json", "r"))
+    profile_index = profile_exists(username)
+    if profile_index > -1:
+        if profile_data[profile_index]["logged-in"] == False:
+            return {"error": "Nejste přihlášeni"}
+    else:
+        return {"error": "Uživatelské jméno neexistuje"}
+    friends = []
+    for friend in profile_data[profile_index]["friends"]:
+        friend_index = profile_exists(friend)
+        friends.append({
+            "username": friend,
+            "xp": profile_data[friend_index]["xp"],
+            "level": profile_data[friend_index]["level"],
+            "profile_picture": profile_data[friend_index]["profile_picture"]
+        })
+    return friends
+
 # if __name__ == "__main__":
 #     uvicorn.run(app, host="127.0.0.1", port=8000)
 
