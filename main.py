@@ -206,6 +206,19 @@ def read_root():
         usernames.append(user["username"])
     return usernames
 
+# vypiš všechny usernamy+levely+pictures
+@app.get("/profile/usernames-levels-pictures")
+def read_root():
+    profile_data = json.load(open("profiles.json", "r"))
+    usernames = []
+    for user in profile_data:
+        usernames.append({
+            "username": user["username"],
+            "level": user["level"],
+            "profile_picture": user["profile_picture"]
+        })
+    return usernames
+
 # darkmode
 @app.get("/profile/darkmode/{username}/{darkmode}")
 def read_root(username: str, darkmode: bool):
