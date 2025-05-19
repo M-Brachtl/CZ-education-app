@@ -6,6 +6,9 @@
         "friends": [
             "jane_smith"
         ],
+        "friends_requests": [
+            "ree_desi"
+        ],
         "level": 1,
         "profile_picture": "default.png",
         "xp": 0,
@@ -18,6 +21,7 @@
         "friends": [
             "john_doe"
         ],
+        "friends_requests": [],
         "level": 1,
         "profile_picture": "default.png",
         "xp": 0,
@@ -28,6 +32,9 @@
         "password": "Sideri652",
         "darkmode": true,
         "friends": [],
+        "friends_requests": [
+            "jane_smith"
+        ],
         "level": 1,
         "profile_picture": "ree_desi.png",
         "xp": 0,

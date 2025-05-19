@@ -100,6 +100,7 @@ def read_root(username: str, password: str):
             "password": password,
             "darkmode": False,
             "friends": [],
+            "friends_requests": [],
             "level": 1,
             "profile_picture": "default.png",
             "xp": 0,
@@ -124,6 +125,8 @@ def read_root(username: str, friend: str):
                 if user["username"] == friend:
                     user["friends"].append(username)
                     break
+            if friend in profile_data[profile_index]["friends_requests"]:
+                profile_data[profile_index]["friends_requests"].remove(friend)
             json.dump(profile_data, open("profiles.json", "w"),indent=4)
             return {"success": "Přítel byl úspěšně přidán"}
         else:
@@ -286,6 +289,26 @@ def read_root(username: str):
             "profile_picture": profile_data[friend_index]["profile_picture"]
         })
     return friends
+
+# get user data
+@app.get("/profile/get-user-data/{username}")
+def read_root(username: str):
+    profile_data = json.load(open("profiles.json", "r"))
+    profile_index = profile_exists(username)
+    if profile_index > -1:
+        if profile_data[profile_index]["logged-in"] == False:
+            return {"error": "Nejste přihlášeni"}
+    else:
+        return {"error": "Uživatelské jméno neexistuje"}
+    return {
+        "username": profile_data[profile_index]["username"],
+        "darkmode": profile_data[profile_index]["darkmode"],
+        "friends": profile_data[profile_index]["friends"],
+        "friends_requests": profile_data[profile_index]["friends_requests"],
+        "xp": profile_data[profile_index]["xp"],
+        "level": profile_data[profile_index]["level"],
+        "profile_picture": profile_data[profile_index]["profile_picture"]
+    }
 
 # if __name__ == "__main__":
 #     uvicorn.run(app, host="127.0.0.1", port=8000)
