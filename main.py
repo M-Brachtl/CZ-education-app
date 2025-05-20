@@ -118,7 +118,8 @@ def read_root(username: str, friend: str):
             return {"error": "Nejste přihlášeni"}
     else:
         return {"error": "Uživatelské jméno neexistuje"}
-    if profile_exists(friend) > -1:
+    friend_index = profile_exists(friend)
+    if friend_index > -1:
         if friend not in profile_data[profile_index]["friends"]:
             profile_data[profile_index]["friends"].append(friend)
             for user in profile_data:
@@ -127,6 +128,8 @@ def read_root(username: str, friend: str):
                     break
             if friend in profile_data[profile_index]["friends_requests"]:
                 profile_data[profile_index]["friends_requests"].remove(friend)
+            if username in profile_data[friend_index]["friends_requests"]:
+                profile_data[friend_index]["friends_requests"].remove(username)
             json.dump(profile_data, open("profiles.json", "w"),indent=4)
             return {"success": "Přítel byl úspěšně přidán"}
         else:
