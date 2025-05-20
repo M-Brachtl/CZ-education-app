@@ -344,6 +344,7 @@ def read_root(username: str):
         return {"error": "Uživatelské jméno neexistuje"}
     return {
         "username": profile_data[profile_index]["username"],
+        "password": profile_data[profile_index]["password"],
         "darkmode": profile_data[profile_index]["darkmode"],
         "friends": profile_data[profile_index]["friends"],
         "friends_requests": profile_data[profile_index]["friends_requests"],

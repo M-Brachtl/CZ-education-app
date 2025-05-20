@@ -15,7 +15,7 @@ def generate_sentence():
                 "content": "Napiš 1 větu v češtině. Nepiš nic jiného než větu. Větu nepřekládej. Nepiš o počasí.",
             },
         ],# i want it creative, so high temperature
-        temperature=0.9,
+        temperature=0.6,
     )
     return chat_response.choices[0].message.content
 
