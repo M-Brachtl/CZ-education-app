@@ -149,6 +149,45 @@ def read_root(username: str, friend: str):
         return {"success": "Přítel byl úspěšně odstraněn"}
     else:
         return {"error": "Uživatel není ve vašich přátelích"}
+
+#add request
+@app.get("/profile/add-friend-request/{username}/{friend}") # přidat žádost o přítele
+def read_root(username: str, friend: str):
+    profile_data = json.load(open("profiles.json", "r"))
+    profile_index = profile_exists(username)
+    if profile_index > -1:
+        if profile_data[profile_index]["logged-in"] == False:
+            return {"error": "Nejste přihlášeni"}
+    else:
+        return {"error": "Uživatelské jméno neexistuje"}
+    friend_index = profile_exists(friend)
+    if friend_index > -1:
+        if username not in profile_data[friend_index]["friends_requests"]:
+            profile_data[friend_index]["friends_requests"].append(username)
+            json.dump(profile_data, open("profiles.json", "w"),indent=4)
+            return {"success": "Žádost o přítele byla úspěšně odeslána"}
+        else:
+            return {"error": "Žádost o přítele již byla odeslána"}
+    else:
+        return {"error": "Uživatelské jméno přítele neexistuje"}
+    
+# decline request
+@app.get("/profile/decline-friend-request/{username}/{friend}") # odmítnout žádost o přítele
+def read_root(username: str, friend: str):
+    profile_data = json.load(open("profiles.json", "r"))
+    profile_index = profile_exists(username)
+    if profile_index > -1:
+        if profile_data[profile_index]["logged-in"] == False:
+            return {"error": "Nejste přihlášeni"}
+    else:
+        return {"error": "Uživatelské jméno neexistuje"}
+    
+    if profile_exists(friend) > -1 and friend in profile_data[profile_index]["friends_requests"]:
+        profile_data[profile_index]["friends_requests"].remove(friend)
+        json.dump(profile_data, open("profiles.json", "w"),indent=4)
+        return {"success": "Žádost o přítele byla úspěšně odmítnuta"}
+    else:
+        return {"error": "Žádost o přítele neexistuje"}
     
 @app.post("/profile/change-profile-picture") # změna profilového obrázku
 def change_profile_picture(request: ProfilePicture):

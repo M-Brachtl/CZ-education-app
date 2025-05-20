@@ -12,7 +12,7 @@ def generate_sentence():
         messages = [
             {
                 "role": "user",
-                "content": "Napiš 1 větu v češtině. Nepiš nic jiného než větu. Větu nepřekládej.",
+                "content": "Napiš 1 větu v češtině. Nepiš nic jiného než větu. Větu nepřekládej. Nepiš o počasí.",
             },
         ],# i want it creative, so high temperature
         temperature=0.9,
