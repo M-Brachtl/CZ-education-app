@@ -1,8 +1,8 @@
 import os
 from mistralai import Mistral
-
-api_key = os.environ["MISTRAL_API_KEY"]
-model = "mistral-large-2407"
+#aSvs02V12nE7yoEt0Scw8diGdYcriRz
+api_key = os.getenv("MISTRAL_API_KEY")
+model = "mistral-large-latest"
 
 client = Mistral(api_key=api_key)
 
@@ -12,7 +12,7 @@ def generate_sentence():
         messages = [
             {
                 "role": "user",
-                "content": "Napiš 1 větu v češtině. Nepiš nic jiného než větu. Větu nepřekládej.",
+                "content": "Napiš 1 větu v češtině. Nepiš nic jiného než větu. Větu nepřekládej. Nepiš o počasí.",
             },
         ],# i want it creative, so high temperature
         temperature=0.9,
