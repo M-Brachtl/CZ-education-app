@@ -11,6 +11,14 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200"],  # Angular dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # složky v docs: home, friends, images, profile, kategorie, slovni-druhy, leaderboard
 app.mount("/Czech-Education-App/home", StaticFiles(directory="docs/home", html=True), name="home")
 app.mount("/Czech-Education-App/friends", StaticFiles(directory="docs/friends", html=True), name="friends")
@@ -24,14 +32,6 @@ app.mount("/Czech-Education-App/", StaticFiles(directory="docs", html=True), nam
 
 app.mount("/profile/images", StaticFiles(directory="profile-images"), name="profile-images")
 # přístup k homepage: http://localhost:8000/Czech-Education-App/home
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:4200"],  # Angular dev server
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 def profile_exists(username: str) -> int:
     try:
