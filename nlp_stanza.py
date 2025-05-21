@@ -201,7 +201,7 @@ def get_morphology_sentence(input_text):
                     result[word.text] = word.feats
             elif word.id not in used_words: # pokud není už zpracováno
                 result[word.text] = "" # pokud je to jiný slovní druh (nebo interpunkce), tak vrátíme prázdný string
-            if word.upos == "NOUN":
+            if word.upos == "NOUN" or word.upos == "PROPN":
                 vzor = get_vzor(word.feats, word.lemma)
                 result[word.text] += "|Vzor=" + vzor
     for word in result.keys(): # převedení stringu v AJ na dict v ČJ
@@ -316,7 +316,6 @@ def get_vzor(feats, nominative: str):
         ("stavení", "í", "í")
     ]
     }
-
     if "Gender=Masc" in feats:
         relevant_vzory = vzory["Masc"]
         # kontrola životnosti
@@ -345,7 +344,7 @@ def get_vzor(feats, nominative: str):
 
     if genitive[-3:] == "ete" or genitive[-3:] == "ěte":
         gen_ending = genitive[-3:]
-    elif genitive[-1] in ("a", "e", "y", "í", "i", "ě"):
+    elif genitive[-1] in ("a", "e", "y", "í", "i", "ě", "u"):
         gen_ending = genitive[-1]
     else:
         gen_ending = ""
@@ -353,13 +352,13 @@ def get_vzor(feats, nominative: str):
     if gen_ending == "ě": gen_ending = "e"
     elif gen_ending == "ěte": gen_ending = "ete"
     if "Gender=Neut" not in feats and gen_ending == "ete": gen_ending = "e"
-
+    print(relevant_vzory)
     relevant_vzory = list(filter(lambda x: x[2] == gen_ending, relevant_vzory))
-
+    #print(f"Nom_ending: {nom_ending}, Gen_ending: {gen_ending}")
     return list(relevant_vzory)[0][0] if len(list(relevant_vzory)) > 0 else "N/A"
 
 
 if __name__ == "__main__":
-    print(get_morphology_sentence(input("Enter a sentence: ")))
+    # print(get_morphology_sentence(input("Enter a sentence: ")))
     # print(get_xpos_sentence(input("Enter a sentence: ")))
-    # print(get_vzor("Gender=Fem", "maličkost"))
+    print(get_vzor("Gender=Masc", "čas"))

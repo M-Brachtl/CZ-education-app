@@ -100,6 +100,7 @@ def read_root(username: str, password: str):
             "password": password,
             "darkmode": False,
             "friends": [],
+            "friends_requests": [],
             "level": 1,
             "profile_picture": "default.png",
             "xp": 0,
@@ -117,13 +118,18 @@ def read_root(username: str, friend: str):
             return {"error": "Nejste přihlášeni"}
     else:
         return {"error": "Uživatelské jméno neexistuje"}
-    if profile_exists(friend) > -1:
+    friend_index = profile_exists(friend)
+    if friend_index > -1:
         if friend not in profile_data[profile_index]["friends"]:
             profile_data[profile_index]["friends"].append(friend)
             for user in profile_data:
                 if user["username"] == friend:
                     user["friends"].append(username)
                     break
+            if friend in profile_data[profile_index]["friends_requests"]:
+                profile_data[profile_index]["friends_requests"].remove(friend)
+            if username in profile_data[friend_index]["friends_requests"]:
+                profile_data[friend_index]["friends_requests"].remove(username)
             json.dump(profile_data, open("profiles.json", "w"),indent=4)
             return {"success": "Přítel byl úspěšně přidán"}
         else:
@@ -146,6 +152,45 @@ def read_root(username: str, friend: str):
         return {"success": "Přítel byl úspěšně odstraněn"}
     else:
         return {"error": "Uživatel není ve vašich přátelích"}
+
+#add request
+@app.get("/profile/add-friend-request/{username}/{friend}") # přidat žádost o přítele
+def read_root(username: str, friend: str):
+    profile_data = json.load(open("profiles.json", "r"))
+    profile_index = profile_exists(username)
+    if profile_index > -1:
+        if profile_data[profile_index]["logged-in"] == False:
+            return {"error": "Nejste přihlášeni"}
+    else:
+        return {"error": "Uživatelské jméno neexistuje"}
+    friend_index = profile_exists(friend)
+    if friend_index > -1:
+        if username not in profile_data[friend_index]["friends_requests"]:
+            profile_data[friend_index]["friends_requests"].append(username)
+            json.dump(profile_data, open("profiles.json", "w"),indent=4)
+            return {"success": "Žádost o přítele byla úspěšně odeslána"}
+        else:
+            return {"error": "Žádost o přítele již byla odeslána"}
+    else:
+        return {"error": "Uživatelské jméno přítele neexistuje"}
+    
+# decline request
+@app.get("/profile/decline-friend-request/{username}/{friend}") # odmítnout žádost o přítele
+def read_root(username: str, friend: str):
+    profile_data = json.load(open("profiles.json", "r"))
+    profile_index = profile_exists(username)
+    if profile_index > -1:
+        if profile_data[profile_index]["logged-in"] == False:
+            return {"error": "Nejste přihlášeni"}
+    else:
+        return {"error": "Uživatelské jméno neexistuje"}
+    
+    if profile_exists(friend) > -1 and friend in profile_data[profile_index]["friends_requests"]:
+        profile_data[profile_index]["friends_requests"].remove(friend)
+        json.dump(profile_data, open("profiles.json", "w"),indent=4)
+        return {"success": "Žádost o přítele byla úspěšně odmítnuta"}
+    else:
+        return {"error": "Žádost o přítele neexistuje"}
     
 @app.post("/profile/change-profile-picture") # změna profilového obrázku
 def change_profile_picture(request: ProfilePicture):
@@ -286,6 +331,27 @@ def read_root(username: str):
             "profile_picture": profile_data[friend_index]["profile_picture"]
         })
     return friends
+
+# get user data
+@app.get("/profile/get-user-data/{username}")
+def read_root(username: str):
+    profile_data = json.load(open("profiles.json", "r"))
+    profile_index = profile_exists(username)
+    if profile_index > -1:
+        if profile_data[profile_index]["logged-in"] == False:
+            return {"error": "Nejste přihlášeni"}
+    else:
+        return {"error": "Uživatelské jméno neexistuje"}
+    return {
+        "username": profile_data[profile_index]["username"],
+        "password": profile_data[profile_index]["password"],
+        "darkmode": profile_data[profile_index]["darkmode"],
+        "friends": profile_data[profile_index]["friends"],
+        "friends_requests": profile_data[profile_index]["friends_requests"],
+        "xp": profile_data[profile_index]["xp"],
+        "level": profile_data[profile_index]["level"],
+        "profile_picture": profile_data[profile_index]["profile_picture"]
+    }
 
 # if __name__ == "__main__":
 #     uvicorn.run(app, host="127.0.0.1", port=8000)
