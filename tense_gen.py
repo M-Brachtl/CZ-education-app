@@ -1,7 +1,6 @@
 import os
 
 from mistralai import Mistral
-#aSvs02V12nE7yoEt0Scw8diGdYcriRz
 api_key = os.getenv("MISTRAL_API_KEY")
 model = "mistral-large-2407"
 
