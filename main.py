@@ -64,11 +64,16 @@ def read_root(input_sentence: str):
     return nlp_stanza.get_morphology_sentence(input_sentence)
 
 # Sentence generation
-@app.get("/generate")
-def read_root():
-    sentence = tense_gen.generate_sentence()
+@app.get("/generate/{difficulty}") # do difficulty se zadává easy, normal, hard
+def read_root(difficulty: str):
+    full_difficulty_str = {
+        "easy": "jednouduchou (5 - 7 slov; nesmí být souvětí)",
+        "normal": "středně těžkou (souvětí o max. 2 větách)",
+        "hard": "těžkou (souvětí s přesně 3 větami)"
+    }
+    sentence = tense_gen.generate_sentence(full_difficulty_str[difficulty])
     return {
-        "sentence": sentence,
+        "sentence": tense_gen.double_check(sentence),
         "morph": nlp_stanza.get_morphology_sentence(sentence),
         "pos": nlp_stanza.get_xpos_sentence(sentence)
     }
@@ -281,19 +286,29 @@ def read_root(username: str, darkmode: bool):
 #change login
 @app.get("/profile/change-login/{username}/{new_username}/{new_password}")
 def read_root(username: str, new_username: str, new_password: str):
-    profile_data = json.load(open("profiles.json", "r"))
+    profile_data: list[dict] = json.load(open("profiles.json", "r"))
     profile_index = profile_exists(username)
     if profile_index > -1:
         if profile_data[profile_index]["logged-in"] == False:
             return {"error": "Nejste přihlášeni"}
     else:
         return {"error": "Uživatelské jméno neexistuje"}
-    if profile_exists(new_username) > -1:
+    if profile_exists(new_username) > -1 and new_username != username:
         return {"error": "Uživatelské jméno již existuje"}
     else:
         profile_data[profile_index]["username"] = new_username
         profile_data[profile_index]["password"] = new_password
+        if new_username != username:
+            # change password in friends
+            for user in profile_data:
+                if username in user["friends"]:
+                    user["friends"].remove(username)
+                    user["friends"].append(new_username)
+                if username in user["friends_requests"]:
+                    user["friends_requests"].remove(username)
+                    user["friends_requests"].append(new_username)
         json.dump(profile_data, open("profiles.json", "w"),indent=4)
+
         return {"success": "Uživatelské jméno a heslo bylo úspěšně změněno"}
 
 # leaderboard

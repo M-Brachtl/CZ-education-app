@@ -1,7 +1,7 @@
 [
     {
-        "username": "john_doe",
-        "password": "password123",
+        "username": "charles_doe",
+        "password": "pitomec",
         "darkmode": false,
         "friends": [
             "jane_smith"
@@ -19,7 +19,7 @@
         "password": "yay256",
         "darkmode": false,
         "friends": [
-            "john_doe"
+            "charles_doe"
         ],
         "friends_requests": [],
         "level": 1,
