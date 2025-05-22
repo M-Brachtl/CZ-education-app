@@ -311,7 +311,7 @@ def read_root(username: str, new_username: str, new_password: str):
 
         return {"success": "Uživatelské jméno a heslo bylo úspěšně změněno"}
 
-# leaderboard
+# leaderboard TOP 1%
 @app.get("/leaderboard")
 def read_root():
     profile_data = json.load(open("profiles.json", "r"))
@@ -324,6 +324,7 @@ def read_root():
             "profile_picture": user["profile_picture"]
         })
     leaderboard.sort(key=lambda x: x["xp"], reverse=True)
+    leaderboard = leaderboard[:10]
     return leaderboard
 
 # get friends with xp and profile picture
