@@ -13,7 +13,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],  # Angular dev server
+    allow_origins=["http://localhost:4200","http://localhost:8000"],  # Angular dev server, FastAPI server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -61,7 +61,14 @@ def read_root(input_sentence: str):
 @app.get("/morph/{input_sentence}")
 def read_root(input_sentence: str):
     print(input_sentence)
-    return nlp_stanza.get_morphology_sentence(input_sentence)
+    try:
+        response = nlp_stanza.get_morphology_sentence(input_sentence)
+    except RuntimeError as e:
+        if str(e) == "Non-existent word.":
+            return {"error": "Neexistující slovo."}
+        else:
+            raise e
+    return response
 
 # Sentence generation
 @app.get("/generate/{difficulty}") # do difficulty se zadává easy, normal, hard
@@ -71,12 +78,24 @@ def read_root(difficulty: str):
         "normal": "středně těžkou (souvětí o max. 2 větách)",
         "hard": "těžkou (souvětí s přesně 3 větami)"
     }
-    sentence = tense_gen.generate_sentence(full_difficulty_str[difficulty])
-    return {
-        "sentence": tense_gen.double_check(sentence),
-        "morph": nlp_stanza.get_morphology_sentence(sentence),
-        "pos": nlp_stanza.get_xpos_sentence(sentence)
-    }
+    do_try = True
+    while do_try:
+        do_try = False
+        try:
+            sentence = tense_gen.generate_sentence(full_difficulty_str[difficulty])
+            response = {
+                "sentence": tense_gen.double_check(sentence),
+                "morph": nlp_stanza.get_morphology_sentence(sentence),
+                "pos": nlp_stanza.get_xpos_sentence(sentence)
+            }
+        except RuntimeError as e:
+            if str(e) == "Non-existent word.":
+                do_try = True
+                print("Non-existent word. Trying again...")
+            else:
+                raise e
+
+    return response
 
 # User profile functions
 @app.get("/profile/login/{username}/{password}") # přihlášení uživatele

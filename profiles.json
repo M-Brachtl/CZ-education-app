@@ -1,17 +1,16 @@
 [
     {
         "username": "charles_doe",
-        "password": "pitomec",
+        "password": "genius",
         "darkmode": false,
         "friends": [
-            "jane_smith"
-        ],
-        "friends_requests": [
+            "jane_smith",
             "ree_desi"
         ],
-        "level": 1,
+        "friends_requests": [],
+        "level": 3,
         "profile_picture": "default.png",
-        "xp": 0,
+        "xp": 25,
         "logged-in": true
     },
     {
@@ -31,7 +30,9 @@
         "username": "ree_desi",
         "password": "Sideri652",
         "darkmode": true,
-        "friends": [],
+        "friends": [
+            "charles_doe"
+        ],
         "friends_requests": [
             "jane_smith"
         ],

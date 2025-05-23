@@ -204,6 +204,7 @@ def get_morphology_sentence(input_text):
             if word.upos == "NOUN" or word.upos == "PROPN":
                 vzor = get_vzor(word.feats, word.lemma)
                 result[word.text] += "|Vzor=" + vzor
+    future_pop = [] # seznam slov, které se mají vymazat z result (pomocná slovesa)
     for word in result.keys(): # převedení stringu v AJ na dict v ČJ
         try:
             real_result = {} # unikátní výsledek pro každé slovo, pak se přidá do result
@@ -234,12 +235,12 @@ def get_morphology_sentence(input_text):
                         #   hledáme v resultech sloveso, které obsahuje pomocné sloveso (ale může tam toho být víc (např. *měl* rád))
                         result_copy = result.copy() # uděláme kopii, abychom mohli upravit result a předešli změnám během iterace
                         for key in result_copy.keys():
-                            if my_head.text in key:
+                            if my_head.text in key: # hledá, kdy klíč co sedí na head, aby mohl pracovat
                                 # 2 možnosti: už je zpracované (a je type dict) nebo není (a je type str)
                                 for feat in result[word].split("|"):
                                     try:
                                         real_result[morphology_key_conversion[feat.split("=")[0]]] = morphology_value_conversion[feat.split("=")[0]][feat.split("=")[1]]
-                                    except KeyError:
+                                    except KeyError: # keyerror, když jde o něco, co nás nezajímá
                                         pass
                                 if type(result[key]) == dict: # pokud už je zpracované, tak ho nebudeme znovu zpracovávat
                                     result[word] = real_result
@@ -250,16 +251,24 @@ def get_morphology_sentence(input_text):
                                         elif category == "Způsob" and value == "podmiňovací":
                                             result[key][category] = value
                                             result[key]["Čas"] = "přítomný"
+                                    result[f"{key} ({word})"] = result[key]
+                                    # a vymažeme původní key
+                                    result.pop(key)
+                                    future_pop.append(word) # vymažeme původní pomocné sloveso
                                 elif type(result[key]) == str: # pokud není zpracované, tak ho zpracujeme
+                                    if word == "jsem": # debug
+                                        print("jsem: ", result[word])
+                                        print(f"{key}: ", result[key])
                                     # odděláme čas, protože pomocné sloveso neurčuje čas významového
                                     if not "Mood=Ind" in result[word]:
                                         result[key] = result[key].replace("Tense=Past", "Tense=Pres") # podmiňovací způsob je v přítomném čase
                                         result[f"{key} ({word})"] = result[key] + "|" + result[word]
                                     else:
-                                        result[f"{key} ({word})"] = result[key] + "|" + result[word].replace("Tense=Pres", "")
+                                        result[f"{key} ({word})"] = result[key] + "|" + result[word].replace("Tense=Pres", "").replace("Aspect=Imp", "").replace("Voice=Act", "")
+                                        
                                     # a vymažeme původní key
                                     result.pop(key)
-                                    result[word] = real_result
+                                    future_pop.append(word) # vymažeme původní pomocné sloveso
                                 elif type(result[key]) == tuple: # pokud je to tuple, tak ho zpracujeme jako sloveso mít rád
                                     # odděláme čas, protože pomocné sloveso neurčuje čas významového
                                     result[key][0].replace("Tense=Past", "Tense=Pres")
@@ -268,7 +277,8 @@ def get_morphology_sentence(input_text):
                                     mitrad_form = f"{key} ({word})" # aby se spustila výjimka v kódu výše
                                     # a vymažeme původní key
                                     result.pop(key)
-                                    result[word] = real_result
+                                    future_pop.append(word) # vymažeme původní pomocné sloveso
+
             try:
                 result[word] = result[word].split("|") # pokud je to pomocné sloveso, pak je zpracováno výše -> AttributeError
                 # result[word] = {feat.split("=")[0]: feat.split("=")[1] for feat in result[word]}
@@ -288,7 +298,11 @@ def get_morphology_sentence(input_text):
                 pass
         except KeyError:
             pass
-
+    for word in future_pop: # vymažeme pomocná slovesa
+        try:
+            result.pop(word)
+        except KeyError:
+            pass
 
     return result
 
@@ -342,6 +356,8 @@ def get_vzor(feats, nominative: str):
     if nom_ending == "ě": nom_ending = "e"
     relevant_vzory = list(filter(lambda x: x[1] == nom_ending, relevant_vzory))
 
+    if genitive == "":
+        raise RuntimeError("Non-existent word.")
     if genitive[-3:] == "ete" or genitive[-3:] == "ěte":
         gen_ending = genitive[-3:]
     elif genitive[-1] in ("a", "e", "y", "í", "i", "ě", "u"):
@@ -359,6 +375,6 @@ def get_vzor(feats, nominative: str):
 
 
 if __name__ == "__main__":
-    # print(get_morphology_sentence(input("Enter a sentence: ")))
+    print(get_morphology_sentence(input("Enter a sentence: ")))
     # print(get_xpos_sentence(input("Enter a sentence: ")))
-    print(get_vzor("Gender=Masc", "čas"))
+    #print(get_vzor("Gender=Masc", "čas"))

@@ -25,7 +25,7 @@ def double_check(the_sentence):
         messages = [
             {
                 "role": "user",
-                "content": f"Následující větu opiš a oprav spelling či jiné chyby, napiš pouze čistě větu bez čehokoli jiného:\n{the_sentence}",
+                "content": f"Následující větu opiš a oprav spelling či jiné chyby nebo chybějící předložky, napiš pouze čistě větu bez čehokoli jiného:\n{the_sentence}",
             },
         ],
         temperature = 0.1,
