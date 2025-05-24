@@ -88,8 +88,10 @@ def read_root(difficulty: str):
                 "morph": nlp_stanza.get_morphology_sentence(sentence),
                 "pos": nlp_stanza.get_xpos_sentence(sentence)
             }
+            if " se " in sentence or " si " in sentence:
+                raise RuntimeError("Reflexive verb generated.")
         except RuntimeError as e:
-            if str(e) == "Non-existent word.":
+            if str(e) == "Non-existent word." or str(e) == "Reflexive verb generated.":
                 do_try = True
                 print("Non-existent word. Trying again...")
             else:
