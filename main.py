@@ -68,7 +68,11 @@ def read_root(input_sentence: str):
             return {"error": "Neexistující slovo."}
         else:
             raise e
-    return response
+    return {
+        "sentence": input_sentence,
+        "morph": response,
+        "pos": nlp_stanza.get_xpos_sentence(input_sentence) 
+    }
 
 # Sentence generation
 @app.get("/generate/{difficulty}") # do difficulty se zadává easy, normal, hard
