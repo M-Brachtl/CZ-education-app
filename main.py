@@ -92,7 +92,7 @@ def read_root(difficulty: str):
                 "morph": nlp_stanza.get_morphology_sentence(sentence),
                 "pos": nlp_stanza.get_xpos_sentence(sentence)
             }
-            if len(sentence.split(" se ")) > 2 or len(sentence.split(" si ") > 2):
+            if len(sentence.split(" se ")) > 2 or len(sentence.split(" si ")) > 2:
                 raise RuntimeError("Reflexive verb generated.")
         except RuntimeError as e:
             if str(e) == "Non-existent word." or str(e) == "Reflexive verb generated.":
