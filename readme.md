@@ -32,7 +32,11 @@
 ### Step 2: Install Required Packages
 
 1. Ensure the virtual environment is activated.
-2. Install the required packages with the specified versions:
+2. Install the required packages with the specified versions using requirements.txt:
+    ```sh
+    pip install -r requirements.txt
+    ```
+   or you can list it directly:  
     ```sh
     pip install stanza==1.10.1 fastapi==0.115.8 uvicorn==0.34.0 mistralai==1.7.0
     ```

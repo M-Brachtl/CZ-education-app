@@ -4,3 +4,6 @@ notes.txt
 test.py
 nlp_log.txt
 .env
+docker-compose.yml
+dockerfile
+.dockerignore

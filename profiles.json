@@ -10,7 +10,7 @@
         "friends_requests": [],
         "level": 3,
         "profile_picture": "default.png",
-        "xp": 25,
+        "xp": 49,
         "logged-in": true
     },
     {
@@ -38,6 +38,17 @@
         ],
         "level": 1,
         "profile_picture": "ree_desi.png",
+        "xp": 0,
+        "logged-in": true
+    },
+    {
+        "username": "ich_ja",
+        "password": "ichJa12345",
+        "darkmode": false,
+        "friends": [],
+        "friends_requests": [],
+        "level": 1,
+        "profile_picture": "default.png",
         "xp": 0,
         "logged-in": true
     }

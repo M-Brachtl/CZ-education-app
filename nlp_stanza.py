@@ -1,28 +1,24 @@
 import stanza
 import requests
+
+# if isnt downloaded, uncomment the next line to download the Czech language model
+#stanza.download("cs", model_dir="stanza_resources") # download Czech language model
 nlp = stanza.Pipeline("cs", download_method=stanza.DownloadMethod.REUSE_RESOURCES) # load czech language model
 
 mphDita = lambda sentence: f"https://lindat.mff.cuni.cz/services/morphodita/api/tag?data={sentence}&output=json&convert_tagset=strip_lemma_id" # použití Morphodita API
 genDita = lambda lemma: f"https://lindat.mff.cuni.cz/services/morphodita/api/generate?data={lemma}&convert_tagset=pdt_to_conll2009&output=json" # použití Morphodita API pro genitiv
 
-upos_convertion = {
-    "NOUN": "Podstatné jméno",
-    "VERB": "Sloveso",
-    "ADJ": "Přídavné jméno",
-    "ADV": "Příslovce",
-    "PRON": "Zájmeno",
-    "DET": "Determinátor",
-    "ADP": "Předložka",
-    "NUM": "Číslovka",
-    "CONJ": "Spojka",
-    "PART": "Částice",
-    "INTJ": "Citoslovce",
-    "SCONJ": "Podřadící spojka",
-    "AUX": "Pomocné sloveso",
-    "SYM": "Symbol",
-    "X": "Neznámé",
-    "PROPN": "Vlastní jméno",
-    "CCONJ": "Souřadící spojka"     
+xpos_to_upos = {
+    "N": "NOUN",
+    "A": "ADJ",
+    "V": "VERB",
+    "D": "ADV",
+    "R": "ADP",
+    "P": "PRON",
+    "J": "CCONJ",
+    "C": "NUM",
+    "T": "PART",
+    "I": "INTJ",
 }
 
 xpos_conversion = {
@@ -54,18 +50,55 @@ xpos_num_conversion = {
 
 
 
-def get_upos_sentence(input_text): #určený pouze pro testování
-    doc = nlp(input_text)
-    # print(doc.sentences)
+def xpos_to_feats(xpos):
+    feats = []
+    # 3rd - Gender
+    if xpos[2] == "M":
+        feats.append("Gender=Masc")
+        feats.append("Animacy=Anim") # pokud je mužský rod, tak je životný
+    elif xpos[2] == "I":
+        feats.append("Gender=Masc")
+        feats.append("Animacy=Inan")
+    elif xpos[2] == "F":
+        feats.append("Gender=Fem")
+    elif xpos[2] == "N":
+        feats.append("Gender=Neut")
+    # 4th - Number
+    if xpos[3] == "S":
+        feats.append("Number=Sing")
+    elif xpos[3] == "P":
+        feats.append("Number=Plur")
+    # 5th - Case
+    try:
+        feats.append("Case=" + ("", "Nom", "Gen", "Dat", "Acc", "Voc", "Loc", "Ins")[int(xpos[4])]) # 2 možné exceptions: indexError (když není case) nebo ValueError (když není číslo)
+    except (IndexError, ValueError):
+        pass
+    # 8th - Person
+    try:
+        feats.append("Person=" + ("", "1", "2", "3")[int(xpos[7])])
+    except (IndexError, ValueError):
+        pass
+    # 9th - Tense
+    if xpos[8] == "P":
+        feats.append("Tense=Pres")
+    elif xpos[8] == "F":
+        feats.append("Tense=Fut")
+    elif xpos[8] == "R":
+        feats.append("Tense=Past")
+    # 12th - Voice
+    if xpos[11] == "A":
+        feats.append("Voice=Act")
+    elif xpos[11] == "P":
+        feats.append("Voice=Pass")
+    # 13th - Aspect
+    if xpos[12] == "P":
+        feats.append("Aspect=Perf")
+    elif xpos[12] == "I":
+        feats.append("Aspect=Imp")
+    
+    return "|".join(feats) if len(feats) > 0 else "_"
+    
 
-    for sentence in doc.sentences:
-        result = {}
-        for word in sentence.words:
-            try:
-                result[word.text] = word.upos
-            except KeyError:
-                pass
-        return result
     
 def get_xpos_sentence(input_text):
     doc = requests.get(mphDita(input_text)).json()["result"]
@@ -160,8 +193,20 @@ morphology_value_conversion = {
 
 
 def get_morphology_sentence(input_text):
-    # upos = get_upos_sentence(input_text)
+    # getting pos tags from morphodita
+    morphodita_result = requests.get(mphDita(input_text)).json()["result"]
     doc = nlp(input_text)
+    # musíme přepsat upos tagy na xpos to upos konvertovaný morphodita result
+    for i, sentence in enumerate(morphodita_result):
+        for j, word in enumerate(sentence):
+            try:
+                if doc.sentences[i].words[j].upos != xpos_to_upos[word["tag"][0]] and doc.sentences[i].words[j].lemma != "být":# is not "být"
+                    doc.sentences[i].words[j].upos = xpos_to_upos[word["tag"][0]]
+                    # musíme také opravit feats, protože morphodita dává jiný tag než nlp
+                    doc.sentences[i].words[j].feats = xpos_to_feats(word["tag"])
+            except KeyError:
+                pass
+
     print(doc.sentences,file=open("nlp_log.txt", "w", encoding="utf-8")) # pro debugging
     result = {}
     used_words: list[int] = [] # indexy slov, které už byly zpracovány, aby se nezpracovávaly znovu ("mít rád" a zvratná slovesa)
