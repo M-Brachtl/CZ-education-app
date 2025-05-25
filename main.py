@@ -68,7 +68,11 @@ def read_root(input_sentence: str):
             return {"error": "Neexistující slovo."}
         else:
             raise e
-    return response
+    return {
+        "sentence": input_sentence,
+        "morph": response,
+        "pos": nlp_stanza.get_xpos_sentence(input_sentence) 
+    }
 
 # Sentence generation
 @app.get("/generate/{difficulty}") # do difficulty se zadává easy, normal, hard
@@ -82,14 +86,16 @@ def read_root(difficulty: str):
     while do_try:
         do_try = False
         try:
-            sentence = tense_gen.generate_sentence(full_difficulty_str[difficulty])
+            sentence: str = tense_gen.generate_sentence(full_difficulty_str[difficulty])
             response = {
                 "sentence": tense_gen.double_check(sentence),
                 "morph": nlp_stanza.get_morphology_sentence(sentence),
                 "pos": nlp_stanza.get_xpos_sentence(sentence)
             }
+            if len(sentence.split(" se ")) > 2 or len(sentence.split(" si ") > 2):
+                raise RuntimeError("Reflexive verb generated.")
         except RuntimeError as e:
-            if str(e) == "Non-existent word.":
+            if str(e) == "Non-existent word." or str(e) == "Reflexive verb generated.":
                 do_try = True
                 print("Non-existent word. Trying again...")
             else:
