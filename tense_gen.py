@@ -34,7 +34,7 @@ def double_check(the_sentence):
 
 
 if __name__ == "__main__":
-    difficulty = "snadná"
+    difficulty = "snadná" # possible difficulties: "easy": "jednouduchou (5 - 7 slov; nesmí být souvětí)", "normal": "středně těžkou (souvětí o max. 2 větách)", "hard": "těžkou (souvětí s přesně 3 větami)"
     sentence = generate_sentence(difficulty)
     print(f"Generated sentence: {sentence}")
     corrected_sentence = double_check(sentence)

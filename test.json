@@ -1,0 +1,89 @@
+{
+    "sentence": "Když jsem se probudil ráno, uvědomil jsem si, že jsem zapomněl koupit mléko, a proto jsem musel jít do obchodu.",
+    "morph": {
+        "Když": {},
+        "ráno": {},
+        ",": {},
+        "že": {},
+        "koupit": {},
+        "mléko": {
+            "Pád": 4,
+            "Rod": "střední",
+            "Číslo": "jednotné",
+            "Vzor": "město"
+        },
+        "a": {},
+        "proto": {},
+        "jít": {},
+        "do": {},
+        "obchodu": {
+            "Životnost": "neživotný",
+            "Pád": 2,
+            "Rod": "mužský",
+            "Číslo": "jednotné",
+            "Vzor": "hrad"
+        },
+        ".": {},
+        "probudil se (jsem)": {
+            "Vid": "dokonavý",
+            "Rod": "mužský",
+            "Číslo": "jednotné",
+            "Čas": "minulý",
+            "Slovesný rod": "činný",
+            "Způsob": "oznamovací",
+            "Osoba": 1,
+            "Slovesná forma": "finitní"
+        },
+        "uvědomil si (jsem)": {
+            "Vid": "dokonavý",
+            "Rod": "mužský",
+            "Číslo": "jednotné",
+            "Čas": "minulý",
+            "Slovesný rod": "činný",
+            "Způsob": "oznamovací",
+            "Osoba": 1,
+            "Slovesná forma": "finitní"
+        },
+        "zapomněl (jsem)": {
+            "Vid": "dokonavý",
+            "Rod": "mužský",
+            "Číslo": "jednotné",
+            "Čas": "minulý",
+            "Slovesný rod": "činný",
+            "Způsob": "oznamovací",
+            "Osoba": 1,
+            "Slovesná forma": "finitní"
+        },
+        "musel (jsem)": {
+            "Vid": "nedokonavý",
+            "Rod": "mužský",
+            "Číslo": "jednotné",
+            "Čas": "minulý",
+            "Slovesný rod": "činný",
+            "Způsob": "oznamovací",
+            "Osoba": 1,
+            "Slovesná forma": "finitní"
+        }
+    },
+    "pos": {
+        "Když": 8,
+        "jsem": 5,
+        "se": 3,
+        "probudil": 5,
+        "ráno": 6,
+        ",": 0,
+        "uvědomil": 5,
+        "si": 3,
+        "že": 8,
+        "zapomněl": 5,
+        "koupit": 5,
+        "mléko": 1,
+        "a": 8,
+        "proto": 8,
+        "musel": 5,
+        "jít": 5,
+        "do": 7,
+        "obchodu": 1,
+        ".": 0
+    }
+}

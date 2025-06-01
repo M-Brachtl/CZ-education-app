@@ -288,9 +288,9 @@ def get_morphology_sentence(input_text):
                                     except KeyError: # keyerror, když jde o něco, co nás nezajímá
                                         pass
                                 if type(result[key]) == dict: # pokud už je zpracované, tak ho nebudeme znovu zpracovávat
-                                    result[word] = real_result
+                                    # result[word] = real_result
                                     # nyní dodáme do významového
-                                    for category, value in result[word].items():
+                                    for category, value in real_result.items():
                                         if category == "Osoba":
                                             result[key][category] = value
                                         elif category == "Způsob" and value == "podmiňovací":
@@ -351,8 +351,8 @@ def get_morphology_sentence(input_text):
 
     return result
 
-def get_vzor(feats, nominative: str):
-    nominative = nominative.lower()
+def get_vzor(feats, nominative: str, first_run: bool = True):
+    nominative = nominative.lower() if first_run else nominative # pokud je to první běh, tak převedeme na malá písmena, jinak necháme velká
     vzory = {
     "Masc": [
         ("pán", "", "a"),
@@ -388,6 +388,8 @@ def get_vzor(feats, nominative: str):
             relevant_vzory.remove(("stroj", "", "e"))
     elif "Gender=Fem" in feats:
         relevant_vzory = vzory["Fem"]
+        if nominative == "dítě" and "Number=Plur" in feats:
+            return "kost"
     elif "Gender=Neut" in feats:
         relevant_vzory = vzory["Neut"]
     else:
@@ -402,7 +404,14 @@ def get_vzor(feats, nominative: str):
     relevant_vzory = list(filter(lambda x: x[1] == nom_ending, relevant_vzory))
 
     if genitive == "":
-        raise RuntimeError("Non-existent word.")
+        if first_run: # pokud nenajde genitiv, zkusí vlastní jméno s velkým písmenem
+            print(nominative)
+            try:
+                return get_vzor(feats, nominative.capitalize(), False) # pokud nenajde genitiv, zkusí vlastní jméno s velkým písmenem
+            except RuntimeError:
+                raise RuntimeError("Non-existent word.")
+        else:
+            raise RuntimeError("Non-existent word.")
     if genitive[-3:] == "ete" or genitive[-3:] == "ěte":
         gen_ending = genitive[-3:]
     elif genitive[-1] in ("a", "e", "y", "í", "i", "ě", "u"):
