@@ -30,7 +30,7 @@ app.mount("/Czech-Education-App/leaderboard", StaticFiles(directory="docs/leader
 
 app.mount("/Czech-Education-App/", StaticFiles(directory="docs", html=True), name="static")
 
-app.mount("/profile/images", StaticFiles(directory="profile-images"), name="profile-images")
+app.mount("/profile-images", StaticFiles(directory="profile-images"), name="profile-images")
 # přístup k homepage: http://localhost:8000/Czech-Education-App/home
 
 def profile_exists(username: str) -> int:
