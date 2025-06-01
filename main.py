@@ -348,7 +348,7 @@ def read_root():
             "level": user["level"],
             "profile_picture": user["profile_picture"]
         })
-    leaderboard.sort(key=lambda x: x["xp"], reverse=True)
+    leaderboard.sort(key=lambda x: x["level"], reverse=True)
     leaderboard = leaderboard[:10]
     return leaderboard
 

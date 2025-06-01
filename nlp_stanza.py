@@ -250,7 +250,8 @@ def get_morphology_sentence(input_text):
                 vzor = get_vzor(word.feats, word.lemma)
                 result[word.text] += "|Vzor=" + vzor
     future_pop = [] # seznam slov, které se mají vymazat z result (pomocná slovesa)
-    for word in result.keys(): # převedení stringu v AJ na dict v ČJ
+    result_copy = result.copy() # uděláme kopii, abychom mohli upravit result a předešli změnám během iterace
+    for word in result_copy.keys(): # převedení stringu v AJ na dict v ČJ
         try:
             real_result = {} # unikátní výsledek pro každé slovo, pak se přidá do result
             if word == mitrad_form: # sloveso mít + rád, které je zpracováno jako jedno slovo
@@ -278,7 +279,6 @@ def get_morphology_sentence(input_text):
                     # podmínky: je sloveso, má ve feats "Tense=Past"; MŮŽE být mít rád a zvratné, protože stále může mít pomocné být
                     if my_head.upos == "VERB" and my_head.feats != "_" and "Tense=Past" in my_head.feats:
                         #   hledáme v resultech sloveso, které obsahuje pomocné sloveso (ale může tam toho být víc (např. *měl* rád))
-                        result_copy = result.copy() # uděláme kopii, abychom mohli upravit result a předešli změnám během iterace
                         for key in result_copy.keys():
                             if my_head.text in key: # hledá, kdy klíč co sedí na head, aby mohl pracovat
                                 # 2 možnosti: už je zpracované (a je type dict) nebo není (a je type str)
@@ -291,7 +291,7 @@ def get_morphology_sentence(input_text):
                                     # result[word] = real_result
                                     # nyní dodáme do významového
                                     for category, value in real_result.items():
-                                        if category == "Osoba":
+                                        if category == "Osoba" or (category == "Způsob" and value == "oznamovací") or category == "Slovesná forma":
                                             result[key][category] = value
                                         elif category == "Způsob" and value == "podmiňovací":
                                             result[key][category] = value
@@ -343,6 +343,21 @@ def get_morphology_sentence(input_text):
                 pass
         except KeyError:
             pass
+    secondary_result = {} # pro slovesa, která se ještě nezpracovala
+    for word in result.keys():
+        secondary_result[word] = {} # vytvoříme prázdný slovník pro každé slovo
+        if type(result[word]) == str:
+            for feat in result[word].split("|"):
+                try:
+                    secondary_result[word][morphology_key_conversion[feat.split("=")[0]]] = morphology_value_conversion[feat.split("=")[0]][feat.split("=")[1]]
+                except KeyError:
+                    pass
+        else: # it is dict
+            secondary_result[word] = result[word]
+
+    result = secondary_result # přepíšeme result na secondary_result, aby bylo vše v jednom slovníku
+
+    
     for word in future_pop: # vymažeme pomocná slovesa
         try:
             result.pop(word)
@@ -429,6 +444,7 @@ def get_vzor(feats, nominative: str, first_run: bool = True):
 
 
 if __name__ == "__main__":
-    print(get_morphology_sentence(input("Enter a sentence: ")))
+    print(get_morphology_sentence("Včera jsem umyl nádobí."))
+    print(get_morphology_sentence("Včera umyl jsem nádobí."))
     # print(get_xpos_sentence(input("Enter a sentence: ")))
     #print(get_vzor("Gender=Masc", "čas"))
